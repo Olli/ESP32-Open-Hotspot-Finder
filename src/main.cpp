@@ -3,7 +3,7 @@
 #include <WiFi.h>
 #include <SPI.h>
 // https://github.com/pbecchi/ESP32_ping is needed (beware you have to fix this lib)
-#include <ping.h>
+#include "../lib/ESP32_ping/ping.h"
 
 #define  ENABLE_DEBUG_PING true
 
