@@ -5,7 +5,6 @@
 // https://github.com/pbecchi/ESP32_ping is needed (beware you have to fix this lib)
 #include "../lib/ESP32_ping/ping.h"
 
-#define  ENABLE_DEBUG_PING true
 
 #define MAX_CON_COUNT 50
 
@@ -76,36 +75,43 @@ void printEncryptionType(int thisType) {
   }
 }
 
+
 void listNetworks() {
+
+  WiFi.disconnect();
+
   // scan for nearby networks:
   Serial.println("** Scan Networks **");
   int numSsid = WiFi.scanNetworks();
   if (numSsid == -1) {
     Serial.println("Couldn't get a wifi connection");
-    while (true);
+    delay(1000);
+    //while (true);
   }
+  else {
 
-  // print the list of networks seen:
-  Serial.print("number of available networks: ");
-  Serial.println(numSsid);
+    // print the list of networks seen:
+    Serial.print("number of available networks: ");
+    Serial.println(numSsid);
 
-  // print the network number and name for each network found:
-  for (int thisNet = 0; thisNet < numSsid; thisNet++) {
-    Serial.print(thisNet);
-    Serial.print(") ");
-    Serial.print(WiFi.SSID(thisNet));
-    Serial.print("\tSignal: ");
-    Serial.print(WiFi.RSSI(thisNet));
-    Serial.print(" dBm");
-    Serial.print("\tEncryption: ");
-    printEncryptionType(WiFi.encryptionType(thisNet));
+    // print the network number and name for each network found:
+    for (int thisNet = 0; thisNet < numSsid; thisNet++) {
+      Serial.print(thisNet);
+      Serial.print(") ");
+      Serial.print(WiFi.SSID(thisNet));
+      Serial.print("\tSignal: ");
+      Serial.print(WiFi.RSSI(thisNet));
+      Serial.print(" dBm");
+      Serial.print("\tEncryption: ");
+      printEncryptionType(WiFi.encryptionType(thisNet));
 
-    String ssid_scan = WiFi.SSID(thisNet);
-    int maybeAdHoc = (String(ssid_scan.charAt(2)) == String(":"));
-    if((WiFi.encryptionType(thisNet) == WIFI_AUTH_OPEN && !maybeAdHoc )) {
-      testForInternet(WiFi.SSID(thisNet));
+      String ssid_scan = WiFi.SSID(thisNet);
+      int maybeAdHoc = (String(ssid_scan.charAt(2)) == String(":"));
+      if((WiFi.encryptionType(thisNet) == WIFI_AUTH_OPEN && !maybeAdHoc )) {
+        testForInternet(WiFi.SSID(thisNet));
+      }
+      Serial.print("\n ");
     }
-    Serial.print("\n ");
   }
 }
 
@@ -116,11 +122,13 @@ void testForInternet(String ssid) {
   WiFi.begin(ssid.c_str());
 
   while ((WiFi.status() != WL_CONNECTED) && counter < MAX_CON_COUNT) {
-    delay(500);
+    delay(1000);
     Serial.print("Try to connect to to WiFi: ");
     Serial.println(ssid.c_str());
     counter++;
   }
+
+
   if(WiFi.isConnected()) {
     Serial.print("Connected to the WiFi network: ");
     Serial.println(ssid.c_str());
@@ -128,15 +136,16 @@ void testForInternet(String ssid) {
     if(ping_start(testIP, 4, 0, 0, 5)) {
       Serial.println("Open HotSpot Found!");
       blinkLed();
+    } else {
+      WiFi.disconnect(true);
     }
+
   }
 }
 
 void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
-
-
 }
 
 void loop() {
